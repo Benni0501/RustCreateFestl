@@ -20,7 +20,7 @@ fn get_input() -> (String, String, String, String){
     let mut festl_name = String::new();
     let mut username = String::new();
     let mut password = String::new();
-    println!("Enter URL (e.g. https://hamiz.chickenkiller.com:8080):");
+    println!("Enter URL (e.g. https://<url>:<port>):");
     io::stdin().read_line(&mut url).unwrap_or_else(|err| {
         eprintln!("Something went wrong with the stdin: {}", err);
         process::exit(1);
