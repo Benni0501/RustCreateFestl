@@ -58,25 +58,17 @@ impl Config {
 pub fn send_request(config: Config) -> Result<String, reqwest::Error>{
     let client = Client::builder().http1_title_case_headers().build()?;
     let url = format!("{}/api/festl/", config.url);
+
+    let pb_style: Vec<&str> = vec!["⠋","⠙","⠚","⠞","⠖","⠦","⠴","⠲","⠳","⠓"];
     let pb = ProgressBar::new_spinner();
     pb.enable_steady_tick(Duration::from_millis(80));
     pb.set_style(
         ProgressStyle::with_template("{spinner:.blue} {msg}")
             .unwrap()
-            .tick_strings(&[
-                "⠋",
-                "⠙",
-                "⠚",
-                "⠞",
-                "⠖",
-                "⠦",
-                "⠴",
-                "⠲",
-                "⠳",
-                "⠓"
-            ]),
+            .tick_strings(&pb_style),
     );
     pb.set_message("Creating...");
+
     let res = client.post(url)
         .basic_auth(config.username, Some(config.password))
         .header("Content-Type", "text/plain")
