@@ -1,4 +1,6 @@
-use std::process;
+use std::{error::Error, process};
+use dialoguer::{theme::ColorfulTheme, Input, Password};
+use regex::Regex;
 
 use reqwest::{blocking::Client, StatusCode};
 
@@ -10,10 +12,46 @@ pub struct Config{
 }
 
 impl Config {
-    pub fn build(url: String, festl_name: String, username: String, password: String) -> Config{
+    pub fn build() -> Config {
+        let (url, festl_name, username, password) = Self::get_input().unwrap_or_else(|err| {
+            eprintln!("Something went wrong with the input: {:?}", err);
+            process::exit(1);
+        });
+
         let username = username.trim().to_string();
         let password = password.trim().to_string();
+        
+
         Config{url,festl_name, username, password}
+    }
+
+    fn get_input() -> Result<(String,String,String,String), Box<dyn Error>>{
+        let re = Regex::new(r"^http:\/\/\w+(\.\w+)*(:[0-9]+)?\/?(\/[.\w]*)*$").unwrap();
+        let url: String = Input::with_theme(&ColorfulTheme::default())
+        .with_prompt("Enter URL (e.g. https://<url>:<port>):")
+        .validate_with(|input: &String| -> Result<(),&str> {
+            if re.is_match(input) {
+                Ok(())
+            } else {
+                Err("The input is not a valid url!")
+            }
+        })
+        .interact_text()?;
+
+        let festl_name: String = Input::with_theme(&ColorfulTheme::default())
+        .with_prompt("Enter Festl Name:")
+        .interact_text()?;
+
+        let username: String = Input::with_theme(&ColorfulTheme::default())
+        .with_prompt("Enter Username:")
+        .interact_text()?;
+
+        let password: String = Password::with_theme(&ColorfulTheme::default())
+        .with_prompt("Enter Password:")
+        .with_confirmation("Repeat Password", "Error: The passwords do not match!")
+        .interact()?;
+
+        Ok((url, festl_name, username, password))
     }
 }
 
@@ -34,7 +72,5 @@ pub fn send_request(config: Config) -> Result<String, reqwest::Error>{
         process::exit(1);
     });
     
-    
-
     Ok(password)
 }
