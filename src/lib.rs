@@ -1,7 +1,7 @@
-use std::{error::Error, process};
+use std::{error::Error, process, time::Duration};
 use dialoguer::{theme::ColorfulTheme, Input, Password};
 use regex::Regex;
-
+use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::{blocking::Client, StatusCode};
 
 pub struct Config{
@@ -58,6 +58,25 @@ impl Config {
 pub fn send_request(config: Config) -> Result<String, reqwest::Error>{
     let client = Client::builder().http1_title_case_headers().build()?;
     let url = format!("{}/api/festl/", config.url);
+    let pb = ProgressBar::new_spinner();
+    pb.enable_steady_tick(Duration::from_millis(80));
+    pb.set_style(
+        ProgressStyle::with_template("{spinner:.blue} {msg}")
+            .unwrap()
+            .tick_strings(&[
+                "⠋",
+                "⠙",
+                "⠚",
+                "⠞",
+                "⠖",
+                "⠦",
+                "⠴",
+                "⠲",
+                "⠳",
+                "⠓"
+            ]),
+    );
+    pb.set_message("Creating...");
     let res = client.post(url)
         .basic_auth(config.username, Some(config.password))
         .header("Content-Type", "text/plain")
@@ -71,6 +90,6 @@ pub fn send_request(config: Config) -> Result<String, reqwest::Error>{
         eprint!("Error when parsing the response: {}", err);
         process::exit(1);
     });
-    
+    pb.finish_with_message("Done!");
     Ok(password)
 }
