@@ -26,7 +26,7 @@ impl Config {
     }
 
     fn get_input() -> Result<(String,String,String,String), Box<dyn Error>>{
-        let re = Regex::new(r"^https*:\/\/\w+(\.\w+)*(:[0-9]+)?\/?(\/[.\w]*)*$").unwrap();
+        let re = Regex::new(r"^https*:\/\/[\w-]+(\.\w+)*(:[0-9]+)?\/?(\/[.\w]*)*$").unwrap();
         let url: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("Enter URL (e.g. https://<url>:<port>):")
         .validate_with(|input: &String| -> Result<(),&str> {
